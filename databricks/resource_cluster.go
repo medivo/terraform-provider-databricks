@@ -70,6 +70,10 @@ func resourceCluster() *schema.Resource {
 				Default:     1,
 				Optional:    true,
 			},
+			"tags": {
+				Type:     schema.TypeMap,
+				Optional: true,
+			},
 			"autotermination_minutes": &schema.Schema{
 				Type: schema.TypeInt,
 				Description: `Automatically terminates the cluster after it is
@@ -214,6 +218,7 @@ func resourceServerCreate(data *schema.ResourceData, client interface{}) error {
 		AutoterminationMinutes: int32(data.Get("autotermination_minutes").(int)),
 		EnableElasticDisk:      data.Get("enable_elastic_disk").(bool),
 		AWSAttributes:          awsAttrs,
+		CustomTags:             []db.ClusterTag{},
 	}
 
 	// either set number or workers or configure autoscaling
@@ -234,6 +239,23 @@ func resourceServerCreate(data *schema.ResourceData, client interface{}) error {
 		createReq.Autoscale = &db.Autoscale{
 			Min: minWorkers,
 			Max: maxWorkers,
+		}
+	}
+
+	// add tags
+	if tags, ok := data.Get("tags").(map[string]interface{}); ok {
+		for key, val := range tags {
+			valStr, ok := val.(string)
+			if !ok {
+				return fmt.Errorf("Tag value %#v is not a string", val)
+			}
+			createReq.CustomTags = append(
+				createReq.CustomTags,
+				db.ClusterTag{
+					Key:   key,
+					Value: valStr,
+				},
+			)
 		}
 	}
 
