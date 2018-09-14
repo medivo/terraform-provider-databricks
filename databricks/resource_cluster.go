@@ -74,6 +74,10 @@ func resourceCluster() *schema.Resource {
 				Type:     schema.TypeMap,
 				Optional: true,
 			},
+			"spark_env": {
+				Type:     schema.TypeMap,
+				Optional: true,
+			},
 			"autotermination_minutes": &schema.Schema{
 				Type: schema.TypeInt,
 				Description: `Automatically terminates the cluster after it is
@@ -256,6 +260,15 @@ func resourceServerCreate(data *schema.ResourceData, client interface{}) error {
 					Value: valStr,
 				},
 			)
+		}
+	}
+	if sparkEnv, ok := data.Get("spark_env").(map[string]interface{}); ok {
+		for key, val := range sparkEnv {
+			valStr, ok := val.(string)
+			if !ok {
+				return fmt.Errorf("Spark environment value %#v is not a string", val)
+			}
+			createReq.SparkEnvVars[key] = valStr
 		}
 	}
 
