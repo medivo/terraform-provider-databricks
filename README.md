@@ -1,3 +1,5 @@
+# ⚠️ Please prefer using the actively maintained [Databricks (labs) Terraform Provider](https://registry.terraform.io/providers/databrickslabs/databricks/latest/docs).
+
 Databricks Terraform Provider
 =============================
 
